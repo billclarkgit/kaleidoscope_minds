@@ -20,5 +20,11 @@ document.getElementById('play').addEventListener('click',async e=>{if(!buffers.l
 document.getElementById('stop').addEventListener('click',()=>{if(playing)stopSources();playing=false;position=0;apply();cancelAnimationFrame(raf);updateUI(0);document.getElementById('play').textContent='▶ Play'});
 seek.addEventListener('input',()=>{const t=+seek.value;if(playing){scheduleFrom(t);cancelAnimationFrame(raf);tick()}else position=t;updateUI(t)});
 document.getElementById('reset').addEventListener('click',()=>{states.forEach((s,i)=>{s.mute=s.solo=false;s.vol=1;const r=root.children[i];r.querySelector('.vol').value=1;r.querySelector('.pct').textContent='100%'});apply()});
+
+// Mobile visual-sync watchdog: derive the playhead from the master audio clock.
+function resyncVisuals(){if(!playing)return;const t=currentPos();updateUI(t);}
+setInterval(resyncVisuals,200);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){resyncVisuals();if(playing){cancelAnimationFrame(raf);raf=requestAnimationFrame(tick)}}});
+window.addEventListener('pageshow',()=>{resyncVisuals();if(playing){cancelAnimationFrame(raf);raf=requestAnimationFrame(tick)}});
 apply();loadAudio();})();
 </script></body></html>
